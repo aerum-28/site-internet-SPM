@@ -1,23 +1,22 @@
 FROM node:20-alpine
 
-WORKDIR /app
+# Installer pnpm
+RUN npm install -g pnpm
 
-# Copy everything
+WORKDIR /app
 COPY . .
 
+# Installer les dépendances du monorepo (à la racine)
+RUN pnpm install
 
-# Install dependencies for API
-WORKDIR /app/api
-RUN yarn install
+# Build l'API
+RUN cd api && pnpm run build
 
-# Back to app root
-WORKDIR /app
-
-# Make start script executable
+# Copier start.sh et le rendre exécutable
+COPY start.sh .
 RUN chmod +x start.sh
 
-# Install Caddy
+# Installer caddy
 RUN apk add --no-cache caddy
 
-# Run start script
-CMD ["bash", "start.sh"]
+CMD ["./start.sh"]
